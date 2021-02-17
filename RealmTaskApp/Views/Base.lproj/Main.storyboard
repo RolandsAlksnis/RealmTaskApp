@@ -107,7 +107,11 @@
                     </tableView>
                     <navigationItem key="navigationItem" id="RfW-aw-ice">
                         <rightBarButtonItems>
-                            <barButtonItem systemItem="add" id="kDB-rS-8cW"/>
+                            <barButtonItem systemItem="add" id="kDB-rS-8cW">
+                                <connections>
+                                    <action selector="addItemTapped:" destination="Fdl-Lo-nIZ" id="HN3-4T-lTZ"/>
+                                </connections>
+                            </barButtonItem>
                             <barButtonItem systemItem="edit" id="UeQ-CQ-2Pi"/>
                         </rightBarButtonItems>
                     </navigationItem>

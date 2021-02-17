@@ -43,5 +43,34 @@ class StorageManager {
         }
     }
     
+    // MARK: - INDIVIDUAL TASK METHODS
+    
+    static func saveTask(_ tasksList: TasksList, task: Task) {
+        try! realm.write {
+            tasksList.tasks.append(task)
+        }
+    }
+    
+    
+    static func editTask(_ task: Task, newTask: String, newNote: String) {
+        try! realm.write {
+            task.name = newTask
+            task.note = newNote
+        }
+    }
+    
+    
+    static func deleteTask(_ task: Task) {
+        try! realm.write {
+            realm.delete(task)
+        }
+    }
+    
+    static func makeAllDone(_ task: Task) {
+        try! realm.write {
+            task.isComplete.toggle()
+        }
+    }
+    
     
 }

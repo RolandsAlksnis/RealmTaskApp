@@ -12,6 +12,9 @@ class TasksListTableViewController: UITableViewController {
 
     var tasksList: Results<TasksList>!
     
+    private var isEditingMode = false
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +29,11 @@ class TasksListTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     @IBAction func editItemTapped(_ sender: Any) {
+        isEditingMode.toggle()
+        tableView.setEditing(isEditingMode, animated: true)
+        tableView.reloadData()
     }
+    
     @IBAction func addNewItemTapped(_ sender: Any) {
         alertForAppUpdateList()
     }
@@ -53,50 +60,44 @@ class TasksListTableViewController: UITableViewController {
     }
     
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let currentList = tasksList[indexPath.row]
+        
+        let contextItemDelete = UIContextualAction(style: .destructive, title: "Delete") { (_, _, _) in
+            StorageManager.deleteList(currentList)
+            tableView.deleteRows(at: [indexPath], with: .left)
+        }
+        
+        let contextItemEdit = UIContextualAction(style: .destructive, title: "Edit") { (_, _, _) in
+            self.alertForAppUpdateList(currentList) {
+                tableView.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+        
+        let contextItemDone = UIContextualAction(style: .destructive, title: "Done") { (_, _, _) in
+            StorageManager.makeAllDone(currentList)
+            tableView.reloadRows(at: [indexPath], with: .middle)
+        }
+        
+        contextItemEdit.backgroundColor = #colorLiteral(red: 0.2196078449, green: 0.007843137719, blue: 0.8549019694, alpha: 1)
+        contextItemDone.backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+        
+        let swipeAction = UISwipeActionsConfiguration(actions: [contextItemDelete, contextItemEdit, contextItemDone])
+        
+        return swipeAction
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
+   
+    
     // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        if let indexPath = tableView.indexPathForSelectedRow {
+            let taskList = tasksList[indexPath.row]
+            let vc = segue.destination as! IndividualTaskTableViewController
+            vc.currentTasksList = taskList
+        }
     }
-    */
 
 }
 
@@ -104,7 +105,7 @@ extension UITableViewCell {
     
     func configure(with tasksLists: TasksList) {
         let currentTasks = tasksLists.tasks.filter("isComplete = false")
-        let completedTasks = tasksLists.tasks.filter("isComplete = ture")
+        let completedTasks = tasksLists.tasks.filter("isComplete = true")
         
         textLabel?.text = tasksLists.name
         
@@ -155,7 +156,8 @@ extension TasksListTableViewController{
                 taskList.name = newList
                 
                 StorageManager.saveTasksList(taskList)
-                self.tableView.insertRows(at: [IndexPath(row: self.tasksList.count - 1, section: 0)], with: .automatic)
+                // self.tableView.insertRows(at: [IndexPath(row: self.tasksList.count - 1, section: 0)], with: .automatic)
+                self.tableView.reloadData()
             }
             
         }// save
